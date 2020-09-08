@@ -1,12 +1,13 @@
 const User = require('../../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { UserInputError } = require('apollo-server');
+const { UserInputError, AuthenticationError } = require('apollo-server');
 require('dotenv').config();
 
 // const { find } = require('../../models/User');
 const { validateRegisterInput, validateLoginInput } = require('../../utils/validators');
 const checkAuth = require('../../utils/check-auth');
+const Message = require('../../models/Message');
 
 function generateToken(user) {
 	return jwt.sign(
@@ -16,7 +17,7 @@ function generateToken(user) {
 			username : user.username
 		},
 		process.env.JWT_SECRET_KEY,
-		{ expiresIn: 60 * 60 }
+		{ expiresIn: 2 * 60 * 60 }
 	);
 }
 
@@ -25,9 +26,26 @@ module.exports = {
 		getUsers : async (_, __, context) => {
 			try {
 				const user = checkAuth(context);
-				const users = await User.find({});
+				const users = await User.find({}).select([
+					'-email',
+					'-password'
+				]);
 				// console.log(user);
-				return users.filter((u) => u.username !== user.username);
+				const allUserMessages = await Message.find({
+					$or : [
+						{ from: user.username },
+						{ to: user.username }
+					]
+				});
+				// console.log(allUserMessages.length);
+				const transformedUsers = users.filter((u) => u.username !== user.username).map((otherUser) => {
+					const latestMessage = allUserMessages.find(
+						(m) => m.from === otherUser.username || m.to === otherUser.username
+					);
+					otherUser.latestMessage = latestMessage;
+					return otherUser;
+				});
+				return transformedUsers;
 			} catch (err) {
 				console.log(err);
 				throw err;
@@ -43,12 +61,12 @@ module.exports = {
 				}
 				const user = await User.findOne({ username });
 				if (!user) {
-					customErrors.general = 'User not found !';
+					customErrors.username = "User with this username doesn't exist !";
 					throw customErrors;
 				}
 				const match = await bcrypt.compare(password, user.password);
 				if (!match) {
-					customErrors.general = 'Wrong credentials !';
+					customErrors.password = 'Wrong credentials !';
 					// console.log('it runs');
 					throw customErrors;
 				}
@@ -65,7 +83,7 @@ module.exports = {
 		}
 	},
 	Mutation : {
-		async register(_, { registerInput: { email, password, confirmPassword, username } }) {
+		async register(_, { email, password, confirmPassword, username }) {
 			try {
 				// TODO: make sure user already doesn't exist
 				let customErrors = {};

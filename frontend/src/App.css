@@ -1,0 +1,46 @@
+body {
+	min-height: 100vh;
+	background: hsla(217, 100%, 50%, 1);
+
+	background: linear-gradient(90deg, hsla(217, 100%, 50%, 1) 0%, hsla(186, 100%, 69%, 1) 100%);
+
+	background: -moz-linear-gradient(90deg, hsla(217, 100%, 50%, 1) 0%, hsla(186, 100%, 69%, 1) 100%);
+
+	background: -webkit-linear-gradient(90deg, hsla(217, 100%, 50%, 1) 0%, hsla(186, 100%, 69%, 1) 100%);
+
+	filter: progid: DXImageTransform.Microsoft.gradient(startColorstr="#0061FF", endColorstr="#60EFFF", GradientType=1);
+}
+
+p {
+	margin-bottom: 0;
+}
+
+.user-div:hover {
+	background-color: rgb(250, 250, 250);
+	transition: all 0.5s linear;
+}
+
+.bg-grey {
+	background-color: #e6e6e6;
+}
+
+.messages-box {
+	height: 500px;
+	overflow-y: scroll;
+	scrollbar-width: none;
+}
+.messages-box::-webkit-scrollbar {
+	display: none;
+}
+.user-image {
+	width: 50px;
+	height: 50px;
+	object-fit: cover;
+	border-radius: 50%;
+}
+
+.info-text {
+	color: rgba(0, 0, 0, 0.5);
+	text-align: center;
+	margin-bottom: 0.5rem;
+}
