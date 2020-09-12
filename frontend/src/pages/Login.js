@@ -37,8 +37,7 @@ function Login(props) {
 		},
 		onCompleted(data) {
 			dispatch({ type: 'LOGIN', payload: data.login });
-			// console.log(state);
-			props.history.push('/');
+			window.location.href = '/';
 		}
 	});
 	const submitLoginForm = (e) => {

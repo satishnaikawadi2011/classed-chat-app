@@ -1,11 +1,13 @@
 const checkAuth = require('../../utils/check-auth');
 const Message = require('../../models/Message');
-const { UserInputError, AuthenticationError } = require('apollo-server');
+const { UserInputError, AuthenticationError, PubSub, withFilter } = require('apollo-server');
 const User = require('../../models/User');
 require('dotenv').config();
 
+const pubsub = new PubSub();
+
 module.exports = {
-	Query    : {
+	Query        : {
 		getMessages : async (parent, { from }, context) => {
 			try {
 				const user = checkAuth(context);
@@ -37,7 +39,7 @@ module.exports = {
 			}
 		}
 	},
-	Mutation : {
+	Mutation     : {
 		sendMessage : async (parent, args, context) => {
 			try {
 				const { to, content } = args;
@@ -63,6 +65,8 @@ module.exports = {
 					from    : user.username,
 					content
 				});
+
+				pubsub.publish('NEW_MESSAGE', { newMessage: message });
 				return {
 					id : message._id,
 					...message._doc
@@ -71,6 +75,29 @@ module.exports = {
 				console.log(err);
 				throw err;
 			}
+		}
+	},
+	Subscription : {
+		newMessage : {
+			subscribe : withFilter(
+				(_, __, context) => {
+					// console.log('In sub');
+					const user = checkAuth(context);
+					if (!user) {
+						throw new AuthenticationError('Unauthenticated !');
+					}
+					return pubsub.asyncIterator([
+						'NEW_MESSAGE'
+					]);
+				},
+				(parent, _, context) => {
+					const user = checkAuth(context);
+					if (parent.newMessage.from === user.username || parent.newMessage.to === user.username) {
+						return true;
+					}
+					return false;
+				}
+			)
 		}
 	}
 };

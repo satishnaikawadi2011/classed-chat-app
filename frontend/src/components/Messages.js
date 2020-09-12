@@ -52,12 +52,6 @@ function Messages() {
 		onError(err){
 			console.log(err);
 		},
-		onCompleted(data){
-			dispatch({type:'ADD_MESSAGE',payload:{
-				username:selectedUser.username,
-				message:data.sendMessage
-			}})
-		}
 	})
 	useEffect(
 		() => {

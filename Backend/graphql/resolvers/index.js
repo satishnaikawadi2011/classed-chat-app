@@ -2,18 +2,21 @@ const userResolvers = require('./users');
 const messageResolvers = require('./messages');
 
 module.exports = {
-	Message  : {
+	Message      : {
 		createdAt : (parent) => parent.createdAt.toISOString()
 	},
-	User     : {
+	User         : {
 		createdAt : (parent) => parent.createdAt.toISOString()
 	},
-	Query    : {
+	Query        : {
 		...userResolvers.Query,
 		...messageResolvers.Query
 	},
-	Mutation : {
+	Mutation     : {
 		...userResolvers.Mutation,
 		...messageResolvers.Mutation
+	},
+	Subscription : {
+		...messageResolvers.Subscription
 	}
 };

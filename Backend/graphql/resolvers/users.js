@@ -23,8 +23,9 @@ function generateToken(user) {
 
 module.exports = {
 	Query    : {
-		getUsers : async (_, __, context) => {
+		getUsers : async (_, __, context, info) => {
 			try {
+				console.log(info);
 				const user = checkAuth(context);
 				const users = await User.find({}).select([
 					'-email',
